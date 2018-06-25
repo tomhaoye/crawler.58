@@ -46,7 +46,6 @@ def fetch_list_pages(db, city_index):
                     add_community = Community(city_index, area.area_index, community)
                     db.add(add_community)
                     logging.info('新增1条小区信息')
-                area.insert = 1
                 db.commit()
 
             # save_file = DATA_DIR.joinpath(f'{city_index}_{area.area_index}_{page}.html')
@@ -60,6 +59,8 @@ def fetch_list_pages(db, city_index):
             # if tbody_list.text() == '':
             #     logging.warning('页面数据为空，该区域抓取完毕或被限制访问')
             #     break
+        area.insert = 1
+        db.commit()
 
     logging.info('抓取区域列表数据完毕')
     db.close()

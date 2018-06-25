@@ -5,6 +5,9 @@
  - python 3.6+
  - mysql 5.7
  
+### 安装依赖
+```pip install -r requirement```
+ 
 ### 目录结构
  - app
    - model

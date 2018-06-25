@@ -1,0 +1,4 @@
+pyquery
+pymysql
+requests
+sqlalchemy

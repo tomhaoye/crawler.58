@@ -4,7 +4,6 @@ from model.community import Community
 import requests
 import logging
 from pyquery import PyQuery
-import time
 import json
 
 db_session = Session()

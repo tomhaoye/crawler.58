@@ -5,9 +5,7 @@ from util.orm import Session
 from model import Area
 from pyquery import PyQuery
 import config
-import time
 from proxy import gen_proxies
-import random
 import json
 from model.community import Community
 
@@ -54,7 +52,6 @@ def fetch_list_pages(db, city_index):
             # tbody_list = doc('#infolist tbody')
 
             page += 1
-            # time.sleep(random.randint(1, 2))
 
             # if tbody_list.text() == '':
             #     logging.warning('页面数据为空，该区域抓取完毕或被限制访问')

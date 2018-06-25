@@ -5,16 +5,16 @@ import requests
 import logging
 from pyquery import PyQuery
 import json
-from queue import Queue
-from threading import Thread
 
 db_session = Session()
 
 
-def thread_fetch(community_queue: Queue):
-    db = Session()
-    while not community_queue.empty():
-        community = community_queue.get()
+def fetch_detail_page(db, city_index):
+    communities = db.query(Community).filter(
+        Community.city_index == city_index,
+        Community.detail_info == None
+    ).all()
+    for community in communities:
         logging.info(f'开始抓取{community.alias}小区详情页数据')
         url = f'http://m.58.com/xiaoqu/{community.listname}/'
         try:
@@ -22,7 +22,6 @@ def thread_fetch(community_queue: Queue):
             res.raise_for_status()
         except Exception as e:
             logging.error(f' 错误信息: {e}')
-            community_queue.task_done()
             continue
         doc = PyQuery(res.content)
         keys = []
@@ -50,30 +49,9 @@ def thread_fetch(community_queue: Queue):
             community.alias = alias
         db.commit()
         logging.info(f'抓取{community.alias}小区数据完成')
-        community_queue.task_done()
-    db.close()
-
-
-def fetch_detail_page(db, city_index):
-    communities = db.query(Community).filter(
-        Community.city_index == city_index,
-        Community.detail_info == None
-    ).all()
-    community_count = len(communities)
-    logging.info(f'一共有{community_count}个小区需要抓取详情页数据')
-    community_queue = Queue()
-    for community in communities:
-        community_queue.put(community)
-
-    db.close()
-
-    for _ in range(10):
-        worker = Thread(target=thread_fetch, args=[community_queue])
-        worker.start()
-
-    community_queue.join()
-
+        # time.sleep(1)
     logging.info(f'抓取{city_index}所有小区数据完成')
+    db.close()
 
 
 def main(city_index):

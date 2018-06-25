@@ -12,7 +12,7 @@ import json
 from model.community import Community
 
 DATA_DIR = Path(__file__).parent.joinpath('../html/list/').resolve()
-DATA_DIR.mkdir(exist_ok=True)
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 proxy = gen_proxies()
 db_session = Session()

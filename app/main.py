@@ -8,7 +8,7 @@ import config
 
 
 DATA_DIR = Path(__file__).parent.joinpath('../html/area/').resolve()
-DATA_DIR.mkdir(exist_ok=True)
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 db_session = Session()
 
 

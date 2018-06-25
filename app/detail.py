@@ -51,6 +51,7 @@ def thread_fetch(community_queue: Queue):
         db.commit()
         logging.info(f'抓取{community.alias}小区数据完成')
         community_queue.task_done()
+    db.close()
 
 
 def fetch_detail_page(db, city_index):

@@ -45,6 +45,9 @@ def fetch_detail_page(db, city_index):
                 community.lat_lon = f'{lat},{lon}'
                 break
         community.detail_info = json.dumps(detail_json, ensure_ascii=False)
+        if community.alias == '':
+            alias = doc('.xq-basic .name').text()
+            community.alias = alias
         db.commit()
         logging.info(f'抓取{community.alias}小区数据完成')
         # time.sleep(1)

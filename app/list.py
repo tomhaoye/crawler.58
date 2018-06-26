@@ -44,7 +44,6 @@ def fetch_list_pages(db, city_index):
                     add_community = Community(city_index, area.area_index, community)
                     db.add(add_community)
                     logging.info('新增1条小区信息')
-                db.commit()
 
             # save_file = DATA_DIR.joinpath(f'{city_index}_{area.area_index}_{page}.html')
             # save_file.write_bytes(res.content)

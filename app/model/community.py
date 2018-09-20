@@ -22,13 +22,13 @@ class Community(Base):
     lat_lon = Column(String(128))
 
     def __init__(self, city_index, area_index, info):
-        self.listname = info['infoParamEntity']['map']['listname']
+        self.listname = info['infoParamEntity']['map']['listname'] if info['infoParamEntity']['map']['listname'] else 'empty'
         self.city_index = city_index
         self.area_index = area_index
         self.infoid = info['infoid']
         self.area_name = info['areaName']
         self.address = info['address']
-        self.alias = info['alias']
+        self.alias = info['alias'] if info['alias'] else 'empty'
         self.subway = info['infoParamEntity']['map']['subway']
         self.shangquan = info['shangquanName']
         self.price = info['price']

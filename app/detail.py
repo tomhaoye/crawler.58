@@ -5,7 +5,6 @@ import requests
 import logging
 from pyquery import PyQuery
 import json
-import time
 
 db_session = Session()
 
@@ -51,7 +50,6 @@ def fetch_detail_page(db, city_index):
             community.alias = alias
         db.commit()
         logging.info(f'抓取{community.alias}小区数据完成')
-        time.sleep(1)
     logging.info(f'抓取{city_index}所有小区数据完成')
     db.close()
 

@@ -12,9 +12,9 @@ headers = {
     "Cache-Control": "max-age=0",
     "Connection": "keep-alive",
     "Host": "m.58.com",
-    "If-Modified-Since": "Sun, 24 Jun 2018 10:11:06 GMT",
+    "If-Modified-Since": "Sun, 24 Sep 2018 10:11:06 GMT",
     "Upgrade-Insecure-Requests": "1",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Mobile Safari/537.36"
 }
 
 

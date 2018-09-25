@@ -5,6 +5,7 @@ import requests
 import logging
 from pyquery import PyQuery
 import json
+import time
 
 db_session = Session()
 
@@ -36,20 +37,21 @@ def fetch_detail_page(db, city_index):
             index += 1
         detail_json = dict(zip(keys, values))
         scripts_info = doc('script')
-        for script in scripts_info:
-            if 'lat:' in script.text:
-                step_one = script.text.split('lat: \'')[1]
-                lat = step_one.split('\', lon: \'')[0]
-                lon = step_one.split('\', lon: \'')[1].split('\' }')[0]
-                community.lat_lon = f'{lat},{lon}'
-                break
-        community.detail_info = json.dumps(detail_json, ensure_ascii=False)
+        if scripts_info:
+            for script in scripts_info:
+                if script is not None and script.text is not None and 'lat:' in script.text:
+                    step_one = script.text.split('lat: \'')[1]
+                    lat = step_one.split('\', lon: \'')[0]
+                    lon = step_one.split('\', lon: \'')[1].split('\' }')[0]
+                    community.lat_lon = f'{lat},{lon}'
+                    break
+        community.detail_info = json.dumps(detail_json, ensure_ascii=False) if detail_json else None
         if community.alias == '':
             alias = doc('.xq-basic .name').text()
             community.alias = alias
         db.commit()
         logging.info(f'抓取{community.alias}小区数据完成')
-        # time.sleep(1)
+        time.sleep(1)
     logging.info(f'抓取{city_index}所有小区数据完成')
     db.close()
 

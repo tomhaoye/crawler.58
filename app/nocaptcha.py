@@ -1,10 +1,8 @@
 import cv2
 import time
-import json
-import requests
+from io import BytesIO
 import PIL.Image as image
 from selenium import webdriver
-from urllib.request import urlretrieve
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
@@ -15,8 +13,12 @@ origin_fbg_path = '../pic/fbg.jpg'
 merge_bg_path = '../pic/merged.jpg'
 merge_fbg_path = '../pic/fmerged.jpg'
 
+cut_image_path = '../pic/cut.jpg'
+bin_bg_path = '../pic/bin_bg.jpg'
+opencv_bg_path = '../pic/opencv_bg.jpg'
 
-def simulate(origin_bg_path='', origin_fbg_path=''):
+
+def simulate():
     browser = webdriver.Chrome(executable_path="C:\Program Files (x86)\Google\Chrome\Application\chromedriver")
     browser.implicitly_wait(5)
     wait = WebDriverWait(browser, 10)
@@ -27,19 +29,64 @@ def simulate(origin_bg_path='', origin_fbg_path=''):
         browser.find_elements_by_class_name("geetest_radar_tip")) > 1 else browser.find_element_by_class_name(
         "geetest_radar_tip").click()
     time.sleep(2)
-    browser.find_element_by_class_name("geetest_refresh_1").click()
-    time.sleep(1)
-    refresh_url = browser.find_elements_by_css_selector("head script")[-1].get_attribute('src')
-    callback = requests.get(refresh_url).text
-    callback = json.loads(callback.split('(')[1].split(')')[0])
-    static_url = 'http://static.geetest.com/'
-    urlretrieve(url=static_url + callback['bg'], filename=origin_bg_path)
-    print('缺口图片下载完成')
-    urlretrieve(url=static_url + callback['fullbg'], filename=origin_fbg_path)
-    print('背景图片下载完成')
+    return cut_gt_window_image(browser)
+
+
+# 直接页面截取图片/不太行/居然这才行
+def cut_gt_window_image(browser):
+    image_div = browser.find_element_by_class_name("geetest_window")
+    location = image_div.location
+    size = image_div.size
+    top, bottom, left, right = location['y'], location['y'] + size['height'], location['x'], location['x'] + size[
+        'width']
+    screen_shot = browser.get_screenshot_as_png()
+    screen_shot = image.open(BytesIO(screen_shot))
+    captcha = screen_shot.crop((left, top, right, bottom))
+    captcha = captcha.convert('RGB')
+    captcha.save(cut_image_path)
     return browser
 
 
+def get_x_point(bin_img_path=''):
+    img = image.open(bin_img_path).load()
+    for x_cur in range(60, 260):
+        for y_cur in range(0, 160):
+            if img[x_cur, y_cur] == 0:
+                if judge_position(img, x_cur, y_cur):
+                    return x_cur
+                else:
+                    continue
+
+
+def judge_position(img, x_cur, y_cur):
+    return True
+
+
+# 二值化
+def get_bin_image(img_path='', save_path='', t_h=160, t_l=60):
+    img = image.open(img_path)
+    img = img.convert('L')
+    table = []
+    for i in range(256):
+        if i in range(t_l, t_h):
+            table.append(0)
+        else:
+            table.append(1)
+    binary = img.point(table, '1')
+    binary.save(save_path)
+
+
+# 模拟滑动
+def btn_slide(t_browser, x_offset=0):
+    slider = t_browser.find_element_by_class_name("geetest_slider_button")
+    ActionChains(t_browser).click_and_hold(slider).perform()
+    ActionChains(t_browser).move_by_offset(x_offset, yoffset=0).perform()
+    ActionChains(t_browser).release().perform()
+    time.sleep(2)
+    t_browser.close()
+
+
+# 混乱图片还原
 def merge_img(img_path='', target=''):
     im = image.open(img_path)
     to_image = image.new('RGB', (260, 160))
@@ -77,43 +124,16 @@ def opencv_show(img_path=''):
     closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
     closed = cv2.erode(closed, None, iterations=4)
     closed = cv2.dilate(closed, None, iterations=4)
-
-    return thresh
-
-
-def get_x_point(bg_path='', fbg_path=''):
-    bg = opencv_show(bg_path)
-    fbg = opencv_show(fbg_path)
-    for x in range(0, 260):
-        for y in range(0, 160):
-            if bg[y, x] != fbg[y, x]:
-                return x
+    cv2.imwrite(opencv_bg_path, closed)
 
 
-# 模拟滑动
-def btn_slide(t_browser, x_offset=0):
-    slider = t_browser.find_element_by_class_name("geetest_slider_button")
-    ActionChains(t_browser).click_and_hold(slider).perform()
-    ActionChains(t_browser).move_by_offset(x_offset, yoffset=0).perform()
-    ActionChains(t_browser).release().perform()
-    time.sleep(2)
-    t_browser.close()
+t_browser = simulate()
+get_bin_image(cut_image_path, bin_bg_path)
+opencv_show(cut_image_path)
+# x = get_x_point(bin_bg_path)
+# btn_slide(t_browser, x)
 
-
-browser = simulate(origin_bg_path, origin_fbg_path)
-bg = merge_img(origin_bg_path, merge_bg_path)
-fbg = merge_img(origin_fbg_path, merge_fbg_path)
-x = get_x_point(merge_bg_path, merge_fbg_path)
-bg.paste('#000000', (x, 0, x + 1, 160))
-bg.save('../pic/lll.jpg')
-btn_slide(browser, x)
-
-# 直接页面截取图片/不太行
-# imageDiv = browser.find_element_by_class_name("geetest_window")
-# location = imageDiv.location
-# size = imageDiv.size
-# top, bottom, left, right = location['y'], location['y'] + size['height'], location['x'], location['x'] + size['width']
-# screen_shot = browser.get_screenshot_as_png()
-# screen_shot = image.open(BytesIO(screen_shot))
-# captcha = screen_shot.crop((left, top, right, bottom))
-# captcha.save("../pic/screenshot.png")
+# bg = merge_img(origin_bg_path, merge_bg_path)
+# fbg = merge_img(origin_fbg_path, merge_fbg_path)
+# bg.paste('#000000', (x, 0, x + 1, 160))
+# bg.save('../pic/lll.jpg')

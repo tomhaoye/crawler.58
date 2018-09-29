@@ -48,22 +48,25 @@ def cut_gt_window_image(browser):
 
 
 def get_x_point(bin_img_path=''):
+    b_acc = 0
+    tmp_x_cur = 0
     img = image.open(bin_img_path).load()
-    for x_cur in range(60, 260):
-        for y_cur in range(0, 160):
+    for y_cur in range(30, 130):
+        for x_cur in range(60, 260):
             if img[x_cur, y_cur] == 0:
-                if judge_position(img, x_cur, y_cur):
-                    return x_cur
+                if b_acc == 0:
+                    tmp_x_cur = x_cur
+                b_acc += 1
+            else:
+                if b_acc in range(32, 44):
+                    return tmp_x_cur - 40 + b_acc
                 else:
-                    continue
-
-
-def judge_position(img, x_cur, y_cur):
-    return True
+                    b_acc = 0
+    return tmp_x_cur
 
 
 # 二值化
-def get_bin_image(img_path='', save_path='', t_h=160, t_l=60):
+def get_bin_image(img_path='', save_path='', t_h=150, t_l=60):
     img = image.open(img_path)
     img = img.convert('L')
     table = []
@@ -76,8 +79,27 @@ def get_bin_image(img_path='', save_path='', t_h=160, t_l=60):
     binary.save(save_path)
 
 
+# opencv处理图片
+def opencv_show(img_path=''):
+    img_gray = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+    grad_x = cv2.Sobel(img_gray, ddepth=cv2.CV_32F, dx=1, dy=0, ksize=-1)
+    grad_y = cv2.Sobel(img_gray, ddepth=cv2.CV_32F, dx=0, dy=1, ksize=-1)
+    img_gradient = cv2.subtract(grad_x, grad_y)
+    img_gradient = cv2.convertScaleAbs(img_gradient)
+
+    blurred = cv2.GaussianBlur(img_gradient, (9, 9), 1.5, 9)
+    (_, thresh) = cv2.threshold(blurred, 100, 255, cv2.THRESH_BINARY)
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25))
+    closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+    closed = cv2.erode(closed, None, iterations=4)
+    closed = cv2.dilate(closed, None, iterations=4)
+    cv2.imwrite(opencv_bg_path, closed)
+
+
 # 模拟滑动
 def btn_slide(t_browser, x_offset=0):
+    x_offset -= 6
     slider = t_browser.find_element_by_class_name("geetest_slider_button")
     ActionChains(t_browser).click_and_hold(slider).perform()
     ActionChains(t_browser).move_by_offset(x_offset, yoffset=0).perform()
@@ -109,29 +131,11 @@ def merge_img(img_path='', target=''):
     return to_image
 
 
-# opencv处理图片
-def opencv_show(img_path=''):
-    img_gray = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
-    gradX = cv2.Sobel(img_gray, ddepth=cv2.CV_32F, dx=1, dy=0, ksize=-1)
-    gradY = cv2.Sobel(img_gray, ddepth=cv2.CV_32F, dx=0, dy=1, ksize=-1)
-    img_gradient = cv2.subtract(gradX, gradY)
-    img_gradient = cv2.convertScaleAbs(img_gradient)
-
-    blurred = cv2.blur(img_gradient, (9, 9))
-    (_, thresh) = cv2.threshold(blurred, 90, 255, cv2.THRESH_BINARY)
-
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25))
-    closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-    closed = cv2.erode(closed, None, iterations=4)
-    closed = cv2.dilate(closed, None, iterations=4)
-    cv2.imwrite(opencv_bg_path, closed)
-
-
 t_browser = simulate()
 get_bin_image(cut_image_path, bin_bg_path)
-opencv_show(cut_image_path)
-# x = get_x_point(bin_bg_path)
-# btn_slide(t_browser, x)
+# opencv_show(cut_image_path)
+x = get_x_point(bin_bg_path)
+btn_slide(t_browser, x)
 
 # bg = merge_img(origin_bg_path, merge_bg_path)
 # fbg = merge_img(origin_fbg_path, merge_fbg_path)

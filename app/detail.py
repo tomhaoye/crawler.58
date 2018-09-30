@@ -23,6 +23,7 @@ def fetch_detail_page(db, city_index):
         except Exception as e:
             logging.error(f' 错误信息: {e}')
             continue
+        print(url)
         doc = PyQuery(res.content)
         keys = []
         values = []
@@ -45,7 +46,7 @@ def fetch_detail_page(db, city_index):
                     community.lat_lon = f'{lat},{lon}'
                     break
         community.detail_info = json.dumps(detail_json, ensure_ascii=False) if detail_json else None
-        if community.alias == '':
+        if community.alias == 'empty':
             alias = doc('.xq-basic .name').text()
             community.alias = alias
         db.commit()

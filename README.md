@@ -2,7 +2,7 @@
 
 <p>
 <a href="#"><img src="https://img.shields.io/github/languages/top/tomhaoye/crawler.58" alt="lang"></a>
-<a href="#"><img src="https://img.shields.io/badge/Python-3+-green.svg" alt="limit"></a>
+<a href="#"><img src="https://img.shields.io/badge/Python-3.6+-green.svg" alt="limit"></a>
 <a href="#"><img src="https://img.shields.io/badge/MySQL-5.7-yellow.svg" alt="limit"></a>
 <a href="#"><img src="https://img.shields.io/github/languages/code-size/tomhaoye/crawler.58" alt="size"></a>
 <a href="#"><img src="https://img.shields.io/github/last-commit/tomhaoye/crawler.58" alt="last"></a>
